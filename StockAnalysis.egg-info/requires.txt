@@ -3,3 +3,4 @@ setuptools
 pandas
 seaborn
 matplotlib
+yfinance
