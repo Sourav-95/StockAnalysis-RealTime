@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: StockAnalysis
+Version: 1.0.1
+Author: sourav
+Author-email: souravmaity16@gmail.com
+Requires-Dist: numpy
+Requires-Dist: setuptools
+Requires-Dist: pandas
+Requires-Dist: seaborn
+Requires-Dist: matplotlib
