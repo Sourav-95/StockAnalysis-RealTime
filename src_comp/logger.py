@@ -1,4 +1,3 @@
-# logger.py
 import logging
 import os
 from datetime import datetime
@@ -12,15 +11,15 @@ LOG_FILE_PATH = os.path.join(logs_path, LOG_FILE)
 
 # Create a default logger instance
 logger = logging.getLogger('app_logger')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)  # Set logger to DEBUG level to capture all log levels
 
 # File handler to save logs to a dynamically named log file
 file_handler = RotatingFileHandler(LOG_FILE_PATH, maxBytes=5*1024*1024, backupCount=5)
-file_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.DEBUG)  # Capture DEBUG level logs in file
 
 # Console handler to display logs on the console
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.DEBUG)  # Capture DEBUG level logs in console
 
 # Set log formatting
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
