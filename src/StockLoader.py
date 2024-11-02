@@ -19,9 +19,10 @@ class StockMetadataIngestion:
         self.final_df = pd.DataFrame()
         
     def generate_stock_list(self):
-        """Fetches the stock list from the specified file path."""
-        return get_stock_list(input_file_path=self.stock_file_path, 
+        nse_stock_list = get_stock_list(input_file_path=self.stock_file_path, 
                               market_country=self.market_country)
+        """Fetches the stock list from the specified file path."""
+        return nse_stock_list
     
     def generate_information_df(self, stock_name):
         """Fetches and processes data for a specific stock."""
