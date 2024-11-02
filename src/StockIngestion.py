@@ -20,7 +20,7 @@ class StockInfoFetcher:
             logger.info(f'Successfully fetched stock info for {self.stock_name}.')
             return all_info
         except Exception as e:
-            logger.debug(f'Error fetching Stock info for {self.stock_name}: {e}')
+            logger.debug(f'Error fetching Stock info for {self.stock_name}: {e}\n\n')
             return {}
         
     def filter_stock_info(self):
@@ -29,10 +29,10 @@ class StockInfoFetcher:
 
         try:
             filtered_info = {key: all_info[key] for key in self.all_features if key in all_info}
-            logger.info("Filtered stock information successfully.")
+            logger.info(f"Filtered stock information successfully for {self.stock_name}")
             return pd.DataFrame([filtered_info])
         except Exception as e:
-            logger.debug(f"Error filtering stock info: {e}")
+            logger.debug(f"Error filtering stock info for {self.stock_name} as : {e}")
             return pd.DataFrame()
 
 class StockFeatureEngineering():
