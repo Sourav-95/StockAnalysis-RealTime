@@ -4,7 +4,12 @@ StockAnalysis.egg-info/SOURCES.txt
 StockAnalysis.egg-info/dependency_links.txt
 StockAnalysis.egg-info/requires.txt
 StockAnalysis.egg-info/top_level.txt
+src/FeatureInfo.py
+src/StockIngestion.py
+src/StockLoader.py
 src/__init__.py
-src/exception.py
-src/logger.py
-src/utils.py
+src/stock_list.py
+src_comp/__init__.py
+src_comp/exception.py
+src_comp/logger.py
+src_comp/utils.py
