@@ -9,3 +9,4 @@ Requires-Dist: pandas
 Requires-Dist: seaborn
 Requires-Dist: matplotlib
 Requires-Dist: yfinance
+Requires-Dist: tqdm

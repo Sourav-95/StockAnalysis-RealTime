@@ -2,8 +2,9 @@ import os
 import sys
 import pandas as pd
 import warnings
+from tqdm import tqdm
 from StockIngestion import StockFeatureEngineering, StockInfoFetcher
-from src_comp.logger import logger
+from src_comp.logger import logger, logger_terminal
 from src.stock_list import get_stock_list
 
 sys.path.append('G:\StockAnalysis_API\StockAnalysis-RealTime')
@@ -17,7 +18,7 @@ class StockMetadataIngestion:
         self.output_dir = "Output"
         self.final_df = pd.DataFrame()
         
-    def get_stock_list(self):
+    def generate_stock_list(self):
         """Fetches the stock list from the specified file path."""
         return get_stock_list(input_file_path=self.stock_file_path, 
                               market_country=self.market_country)
@@ -58,10 +59,10 @@ class StockMetadataIngestion:
     def ingest_metadata_stock(self):
         """Main function to ingest metadata for all stocks in the list."""
         # Fetch the list of stock tickers
-        stock_list = self.get_stock_list()
-        logger.info(f'Total no of Records for which need to fetch Stock Details are: {len(stock_list)}\n\n')
-
-        for item in stock_list:
+        stock_list = self.generate_stock_list()
+        logger.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}\n\n')
+        logger_terminal.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}')
+        for item in tqdm(stock_list):
             main_df = self.generate_information_df(item)
             
             # Only concatenate if main_df is not None and contains valid data
@@ -71,8 +72,9 @@ class StockMetadataIngestion:
             else:
                 self.final_df = pd.concat([self.final_df, main_df], ignore_index=True)
                 logger.info(f'All Details Fetched & stored for {item}\n')
-
         logger.info(f'Total records in the final sheet: {self.final_df.shape[0]}\n')
+        logger_terminal.info(f'Total records in the final sheet: {self.final_df.shape[0]}')
         url_metadata = self.save_df_to_csv(self.final_df)
         logger.info(f'Stock Meta Data Generated. URL - {url_metadata}')
+        logger_terminal.info(f'Stock Meta Data Generated. URL - {url_metadata}')
         return url_metadata  # Return the CSV path if needed
