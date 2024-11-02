@@ -7,8 +7,9 @@ Input:
 2. Listed Website country (Eg. India, Others)  -  Currently only Build for India, rest Development in Progress
 
 Output:
-Condition 1: If input stock_name is correct and listed on NSE .. (Currently working on BSE)
+1. Condition 1 - 
+            If input stock_name is correct and listed on NSE .. (Currently working on BSE)
             Then MetaData is Extracted from 
             Yahoo Finance --> Transformed(Feature Engineered) --> Loaded to a DataFrame and then converted to CSV as output.
-Condition 2: If input stock_name is incorrect 
+2. Error :  If input stock_name is incorrect 
             404 ClientError and that particular record is skipped
