@@ -1,4 +1,4 @@
-from src.StockLoader import StockMetadataIngestion
+from src.StockTransformerLoader import StockMetadataIngestion
 from src_comp.logger import logger_terminal
 import time
 

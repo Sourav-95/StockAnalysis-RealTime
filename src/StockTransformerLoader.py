@@ -61,8 +61,10 @@ class StockMetadataIngestion:
         """Main function to ingest metadata for all stocks in the list."""
         # Fetch the list of stock tickers
         stock_list = self.generate_stock_list()
+
         logger.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}\n\n')
         logger_terminal.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}')
+
         for item in tqdm(stock_list):
             main_df = self.generate_information_df(item)
             
@@ -73,9 +75,13 @@ class StockMetadataIngestion:
             else:
                 self.final_df = pd.concat([self.final_df, main_df], ignore_index=True)
                 logger.info(f'All Details Fetched & stored for {item}\n')
+
         logger.info(f'Total records in the final sheet: {self.final_df.shape[0]}\n')
         logger_terminal.info(f'Total records in the final sheet: {self.final_df.shape[0]}')
+
         url_metadata = self.save_df_to_csv(self.final_df)
+
         logger.info(f'Stock Meta Data Generated. URL - {url_metadata}')
         logger_terminal.info(f'Stock Meta Data Generated. URL - {url_metadata}')
+        
         return url_metadata  # Return the CSV path if needed
