@@ -4,8 +4,8 @@ import pandas as pd
 import warnings
 from tqdm import tqdm
 from StockIngestion import StockFeatureEngineering, StockInfoFetcher
+from src.stock_list import Stock_List
 from src_comp.logger import logger, logger_terminal
-from src.stock_list import get_stock_list_india
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -19,10 +19,10 @@ class StockMetadataIngestion:
     def generate_stock_list(self):
         
         if self.market_country == 'India':
-            nse_stock_list = get_stock_list_india(input_file_path=self.stock_file_path)
+            nse_stock_list = Stock_List.get_stock_list_india(input_file_path=self.stock_file_path)
             return nse_stock_list
         elif self.market_country == 'USA':
-            us_stock_list = get_stock_list_usa(input_file_path=self.stock_file_path)
+            us_stock_list = Stock_List.get_stock_list_usa(input_file_path=self.stock_file_path)
             return us_stock_list
         else:
             logger_terminal.warning(f'Incorrect entry of Market Country. Enter Country Correctly. (Eg: India, USA...)')
@@ -53,7 +53,9 @@ class StockMetadataIngestion:
         """Saves the final DataFrame to a CSV file and returns the full absolute file path."""
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-        file_path = os.path.join(self.output_dir, "Stock_Meta_Data.csv")
+        
+        # Create specific file name o each country
+        file_path = os.path.join(self.output_dir, f"Stock_Meta_Data_{self.market_country}.csv")
         data.to_csv(file_path, index=False)
         
         # Convert to absolute path
@@ -70,27 +72,42 @@ class StockMetadataIngestion:
             logger.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}\n\n')
             logger_terminal.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}')
         except Exception as e:
-            logger_terminal.warning(f'Error occured in generate_stock_list() function as : {e}')
+            logger_terminal.warning(f'Error occurred in generate_stock_list() function: {e}')
 
-        # Main function which is creating DataFrame of single record for the Stock item passed to the Loop
+        # Initialize an empty dataframe to store the results
         if stock_list:
             for item in tqdm(stock_list):
-                main_df = self.generate_information_df(item)
-                
-                # Only concatenate if main_df is not None and contains valid data
-                if main_df is None or not isinstance(main_df, pd.DataFrame):
-                    logger.warning(f'No valid data returned for {item}. Skipping this stock.\n\n')
-                    continue
+                main_df = None
+
+                # Apply the logic only for India
+                if self.market_country == "India":
+                    main_df = self.generate_information_df(item)
+                    if main_df is None or not isinstance(main_df, pd.DataFrame):
+                        logger.warning(f'No valid data returned for {item}. Retrying with BSE ticker.')
+                        item_bse = item.replace('.NS', '.BO') 
+                        main_df = self.generate_information_df(item_bse)  
+                        
+                        if main_df is None or not isinstance(main_df, pd.DataFrame):
+                            logger.warning(f'Still no valid data returned for {item_bse}. Skipping this stock.')
+                            continue
+
                 else:
-                    self.final_df = pd.concat([self.final_df, main_df], ignore_index=True)
-                    logger.info(f'All Details Fetched & stored for {item}\n')
+                    main_df = self.generate_information_df(item)
+                    if main_df is None or not isinstance(main_df, pd.DataFrame):
+                        logger.warning(f'No valid data returned for {item}. Skipping this stock.')
+                        continue
 
-            logger.info(f'Total records in the final Dataframe: {self.final_df.shape[0]}\n')
-            logger_terminal.info(f'Total records in the final Dataframe: {self.final_df.shape[0]}')
+                # Concatenate valid data to the final DataFrame
+                self.final_df = pd.concat([self.final_df, main_df], ignore_index=True)
+                logger.info(f'All Details Fetched & stored for {item}\n')
 
+            logger.info(f'Total records in the final DataFrame: {self.final_df.shape[0]}')
+            logger_terminal.info(f'Total records in the final DataFrame: {self.final_df.shape[0]}')
+
+            # Save the final DataFrame to CSV
             url_metadata = self.save_df_to_csv(self.final_df)
 
-            logger.info(f'Stock Meta Data Generated. URL - {url_metadata}')
-            logger_terminal.info(f'Stock Meta Data Generated. URL - {url_metadata}')
-            
+            logger.info(f'Stock Meta Data Generated. URL - {url_metadata}\n')
+            logger_terminal.info(f'Stock Meta Data Generated. URL - {url_metadata}\n')
+
             return url_metadata  # Return the CSV path if needed

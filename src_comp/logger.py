@@ -25,7 +25,7 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 # Create another default logger instance for teminal
-logger_terminal = logging.getLogger('terminal_logger')
+logger_terminal = logging.getLogger('ETL-Logs')
 logger_terminal.setLevel(logging.DEBUG)  # Set terminal logger to DEBUG level
 
 # Console handler to display logs on the console

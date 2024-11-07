@@ -1,5 +1,6 @@
 import pandas as pd
 import yfinance as yf
+from requests.exceptions import HTTPError
 from src_comp.logger import logger
 from src.FeatureInfo import feature_attribute
 
@@ -20,9 +21,13 @@ class StockInfoFetcher:
             all_info = self.stock.info
             logger.info(f'Fetching stock inforation completed for {self.stock_name}.')
             return all_info
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                return 'Client  Error'
+            else:
+                raise
         except Exception as e:
-            logger.debug(f'Error fetching Stock info for {self.stock_name}: {e}\n\n')
-            return {}
+            return f'error: {str(e)}'
         
     def filter_stock_info(self):
         # Filters specific stock attributes based on predefined keys
