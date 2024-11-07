@@ -5,7 +5,7 @@ import warnings
 from tqdm import tqdm
 from StockIngestion import StockFeatureEngineering, StockInfoFetcher
 from src_comp.logger import logger, logger_terminal
-from src.stock_list import get_stock_list
+from src.stock_list import get_stock_list_india
 
 sys.path.append('G:\StockAnalysis_API\StockAnalysis-RealTime')
 
@@ -19,10 +19,13 @@ class StockMetadataIngestion:
         self.final_df = pd.DataFrame()
         
     def generate_stock_list(self):
-        nse_stock_list = get_stock_list(input_file_path=self.stock_file_path, 
-                              market_country=self.market_country)
-        """Fetches the stock list from the specified file path."""
-        return nse_stock_list
+        
+        if self.market_country == 'India':
+            nse_stock_list = get_stock_list_india(input_file_path=self.stock_file_path)
+            return nse_stock_list
+        else:
+            nse_stock_list = 0
+            logger_terminal.warning(f'Incorrect entry of Market Country')
     
     def generate_information_df(self, stock_name):
         """Fetches and processes data for a specific stock."""
@@ -59,29 +62,33 @@ class StockMetadataIngestion:
     
     def ingest_metadata_stock(self):
         """Main function to ingest metadata for all stocks in the list."""
+
         # Fetch the list of stock tickers
-        stock_list = self.generate_stock_list()
+        try:
+            stock_list = self.generate_stock_list()
+            logger.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}\n\n')
+            logger_terminal.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}')
+        except Exception as e:
+            logger_terminal.warning(f'Error occured in generate_stock_list() function as : {e}')
 
-        logger.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}\n\n')
-        logger_terminal.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}')
+        if stock_list:
+            for item in tqdm(stock_list):
+                main_df = self.generate_information_df(item)
+                
+                # Only concatenate if main_df is not None and contains valid data
+                if main_df is None or not isinstance(main_df, pd.DataFrame):
+                    logger.warning(f'No valid data returned for {item}. Skipping this stock.\n\n')
+                    continue
+                else:
+                    self.final_df = pd.concat([self.final_df, main_df], ignore_index=True)
+                    logger.info(f'All Details Fetched & stored for {item}\n')
 
-        for item in tqdm(stock_list):
-            main_df = self.generate_information_df(item)
+            logger.info(f'Total records in the final sheet: {self.final_df.shape[0]}\n')
+            logger_terminal.info(f'Total records in the final sheet: {self.final_df.shape[0]}')
+
+            url_metadata = self.save_df_to_csv(self.final_df)
+
+            logger.info(f'Stock Meta Data Generated. URL - {url_metadata}')
+            logger_terminal.info(f'Stock Meta Data Generated. URL - {url_metadata}')
             
-            # Only concatenate if main_df is not None and contains valid data
-            if main_df is None or not isinstance(main_df, pd.DataFrame):
-                logger.warning(f'No valid data returned for {item}. Skipping this stock.\n\n')
-                continue
-            else:
-                self.final_df = pd.concat([self.final_df, main_df], ignore_index=True)
-                logger.info(f'All Details Fetched & stored for {item}\n')
-
-        logger.info(f'Total records in the final sheet: {self.final_df.shape[0]}\n')
-        logger_terminal.info(f'Total records in the final sheet: {self.final_df.shape[0]}')
-
-        url_metadata = self.save_df_to_csv(self.final_df)
-
-        logger.info(f'Stock Meta Data Generated. URL - {url_metadata}')
-        logger_terminal.info(f'Stock Meta Data Generated. URL - {url_metadata}')
-        
-        return url_metadata  # Return the CSV path if needed
+            return url_metadata  # Return the CSV path if needed

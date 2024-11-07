@@ -1,15 +1,17 @@
 from src.StockTransformerLoader import StockMetadataIngestion
 from src_comp.logger import logger_terminal
 import time
+import os
 
 if __name__ == "__main__":
     try:
-        stock_file_path = input("Enter the path to the stock list CSV file: ")
-        market_country = input("Enter the market country (e.g., 'India' or 'Others'): ")
+        STOCK_FILE_NAME = "stock_list_test.csv"
+        INPUT_FILE_PATH = os.path.join(os.getcwd(), 'inputs', STOCK_FILE_NAME)
+        market_country = "INDIA"
 
         # Create an instance of StockMetadataIngestion with user inputs
         start_time = time.time()
-        stock_ingestor = StockMetadataIngestion(stock_file_path=stock_file_path, 
+        stock_ingestor = StockMetadataIngestion(stock_file_path=INPUT_FILE_PATH, 
                                                 market_country=market_country
                                                 )
         
