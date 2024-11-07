@@ -13,3 +13,7 @@ Output:
             Yahoo Finance --> Transformed(Feature Engineered) --> Loaded to a DataFrame and then converted to CSV as output.
 2. Error :  If input stock_name is incorrect 
             404 ClientError and that particular record is skipped
+
+##### Keywords to Search 
+-   Calculates (Search for the Calculative Functions)
+-   API (Search for the Function of Yahoo Finance APIs)

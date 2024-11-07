@@ -6,7 +6,7 @@ from src.FeatureInfo import feature_attribute
 class StockInfoFetcher:
     """Class to fetch and filter stock information from Yahoo Finance."""
 
-    # Get all the Described Feature
+    # Get all the Described Feature from the list
     all_features = feature_attribute()
 
     def __init__(self, stock_name):
@@ -16,8 +16,9 @@ class StockInfoFetcher:
     def get_stock_info(self):
         # Fetches Stock information from Yahoo Finance
         try:
+            ### Calling from Yahoo Finance API ###
             all_info = self.stock.info
-            logger.info(f'Successfully fetched stock info for {self.stock_name}.')
+            logger.info(f'Fetching stock inforation completed for {self.stock_name}.')
             return all_info
         except Exception as e:
             logger.debug(f'Error fetching Stock info for {self.stock_name}: {e}\n\n')
@@ -26,14 +27,14 @@ class StockInfoFetcher:
     def filter_stock_info(self):
         # Filters specific stock attributes based on predefined keys
         all_info = self.get_stock_info()
-
-        try:
-            filtered_info = {key: all_info[key] for key in self.all_features if key in all_info}
-            logger.info(f"Filtered stock information successfully for {self.stock_name}")
-            return pd.DataFrame([filtered_info])
-        except Exception as e:
-            logger.debug(f"Error filtering stock info for {self.stock_name} as : {e}")
-            return pd.DataFrame()
+        if all_info:
+            try:
+                filtered_info = {key: all_info[key] for key in self.all_features if key in all_info}
+                logger.info(f"Filtered stock information successfully for {self.stock_name}")
+                return pd.DataFrame([filtered_info])
+            except Exception as e:
+                logger.debug(f"Error filtering stock info for {self.stock_name} as : {e}")
+                return pd.DataFrame()
 
 class StockFeatureEngineering():
     """Class to analyze the stock metrics and calculate growth rates"""
@@ -45,6 +46,7 @@ class StockFeatureEngineering():
     def find_growth_income(self, attribute):
         # Calculates 1-Year and 5-Year growth for a specified attribute
         try:
+            ### Calling from Yahoo Finance API (.cash_flow) ###
             data = self.stock.income_stmt
             _1Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 1].loc[attribute]) / data.iloc[:, 1].loc[attribute]
             _5Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 3].loc[attribute]) / data.iloc[:, 3].loc[attribute] / 3
@@ -57,7 +59,8 @@ class StockFeatureEngineering():
     def find_growth_cashflow(self, attribute):
         # Calculates 1-Year and 5-Year growth for a specified attribute
         try:
-            data = self.stock.cash_flow
+            ### Calling from Yahoo Finance API (.cash_flow) ###
+            data = self.stock.cash_flow                     
             cash_flow_attribute = data.iloc[:, 0].loc[attribute]
             logger.info(f"Fetched {attribute} for last Year")
             return cash_flow_attribute
@@ -127,5 +130,5 @@ class StockFeatureEngineering():
         self.calculate_additional_metrics()
         self.convert_market_cap_to_cr()
         self.add_market_category()
-        logger.info("Completed stock analysis.")
+        logger.info("Feature Engineering Completed")
         return self.data_all_info

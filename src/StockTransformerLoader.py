@@ -7,8 +7,6 @@ from StockIngestion import StockFeatureEngineering, StockInfoFetcher
 from src_comp.logger import logger, logger_terminal
 from src.stock_list import get_stock_list_india
 
-sys.path.append('G:\StockAnalysis_API\StockAnalysis-RealTime')
-
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class StockMetadataIngestion:
@@ -23,11 +21,14 @@ class StockMetadataIngestion:
         if self.market_country == 'India':
             nse_stock_list = get_stock_list_india(input_file_path=self.stock_file_path)
             return nse_stock_list
+        elif self.market_country == 'USA':
+            us_stock_list = get_stock_list_usa(input_file_path=self.stock_file_path)
+            return us_stock_list
         else:
-            nse_stock_list = 0
-            logger_terminal.warning(f'Incorrect entry of Market Country')
+            logger_terminal.warning(f'Incorrect entry of Market Country. Enter Country Correctly. (Eg: India, USA...)')
     
     def generate_information_df(self, stock_name):
+
         """Fetches and processes data for a specific stock."""
         try:
             stock_info_fetcher = StockInfoFetcher(stock_name)
@@ -36,11 +37,11 @@ class StockMetadataIngestion:
             if data_all_info.empty or data_all_info.isna().all(axis=None):
                 logger.warning(f"No valid data found for {stock_name}.")
                 return None
-
-            stock_analyzer = StockFeatureEngineering(stock_info_fetcher.stock, data_all_info)
-            result = stock_analyzer.StockFeatureEngine()
-            logger.info(f"Result fetched & stored for {stock_name}.")
-            return result
+            else:
+                stock_analyzer = StockFeatureEngineering(stock_info_fetcher.stock, data_all_info)
+                result = stock_analyzer.StockFeatureEngine()
+                logger.info(f"Result fetched & stored for {stock_name}.")
+                return result
         except ValueError as ve:
             logger.error(f"ValueError: {ve} for stock {stock_name}")
             return None
@@ -71,6 +72,7 @@ class StockMetadataIngestion:
         except Exception as e:
             logger_terminal.warning(f'Error occured in generate_stock_list() function as : {e}')
 
+        # Main function which is creating DataFrame of single record for the Stock item passed to the Loop
         if stock_list:
             for item in tqdm(stock_list):
                 main_df = self.generate_information_df(item)
@@ -83,8 +85,8 @@ class StockMetadataIngestion:
                     self.final_df = pd.concat([self.final_df, main_df], ignore_index=True)
                     logger.info(f'All Details Fetched & stored for {item}\n')
 
-            logger.info(f'Total records in the final sheet: {self.final_df.shape[0]}\n')
-            logger_terminal.info(f'Total records in the final sheet: {self.final_df.shape[0]}')
+            logger.info(f'Total records in the final Dataframe: {self.final_df.shape[0]}\n')
+            logger_terminal.info(f'Total records in the final Dataframe: {self.final_df.shape[0]}')
 
             url_metadata = self.save_df_to_csv(self.final_df)
 
