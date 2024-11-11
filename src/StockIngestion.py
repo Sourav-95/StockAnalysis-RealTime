@@ -44,9 +44,10 @@ class StockInfoFetcher:
 class StockFeatureEngineering():
     """Class to analyze the stock metrics and calculate growth rates"""
 
-    def __init__(self, stock, data_all_info):
+    def __init__(self, stock, data_all_info, market_country):
         self.stock = stock
         self.data_all_info = data_all_info
+        self.market_country = market_country
 
     def find_growth_income(self, attribute):
         # Calculates 1-Year and 5-Year growth for a specified attribute
@@ -108,8 +109,10 @@ class StockFeatureEngineering():
     def convert_market_cap_to_cr(self):
         """Converts marketCap from absolute terms to crores."""
         try:
-            self.data_all_info['MarketCap_Crores'] = self.data_all_info['marketCap'] / 10000000  # Divide by 10 million
-            logger.info("Converted marketCap to crores.")
+            if self.market_country == 'India':
+                self.data_all_info['MarketCap_Crores'] = self.data_all_info['marketCap'] / 10000000  # Divide by 10 million
+                self.data_all_info.drop(columns=['marketCap'], axis=1, inplace=True)
+                logger.info("Converted marketCap to crores.")
         except Exception as e:
             logger.debug(f"Error converting marketCap to crores: {e}")
 
@@ -134,6 +137,7 @@ class StockFeatureEngineering():
         self.add_growth_features()
         self.calculate_additional_metrics()
         self.convert_market_cap_to_cr()
-        self.add_market_category()
+        if self.market_country == 'India':
+            self.add_market_category()
         logger.info("Feature Engineering Completed")
         return self.data_all_info

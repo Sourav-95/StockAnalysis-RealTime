@@ -17,3 +17,6 @@ Output:
 ##### Keywords to Search 
 -   Calculates (Search for the Calculative Functions)
 -   API (Search for the Function of Yahoo Finance APIs)
+
+For Country India, the Market Cap is modified to INR in Crore
+For USA it need to be done accordingly and rest as per criteria (Need to work)

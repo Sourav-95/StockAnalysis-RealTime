@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 import warnings
 from tqdm import tqdm
-from StockIngestion import StockFeatureEngineering, StockInfoFetcher
+from src.StockIngestion import StockFeatureEngineering, StockInfoFetcher
 from src.stock_list import Stock_List
 from src_comp.logger import logger, logger_terminal
 
@@ -38,7 +38,10 @@ class StockMetadataIngestion:
                 logger.warning(f"No valid data found for {stock_name}.")
                 return None
             else:
-                stock_analyzer = StockFeatureEngineering(stock_info_fetcher.stock, data_all_info)
+                stock_analyzer = StockFeatureEngineering(stock_info_fetcher.stock, 
+                                                         data_all_info, 
+                                                         market_country=self.market_country
+                                                         )
                 result = stock_analyzer.StockFeatureEngine()
                 logger.info(f"Result fetched & stored for {stock_name}.")
                 return result
