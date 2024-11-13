@@ -1,6 +1,6 @@
 from src.StockTransformerLoader import StockMetadataIngestion
-from requests.exceptions import HTTPError
-from src_comp.logger import logger_terminal
+from components.logger import logger_terminal
+from components.logger import logger
 import time
 import os
 
@@ -16,7 +16,8 @@ if __name__ == "__main__":
         start_time = time.time()
 
         for country, file_path in COUNTRY_FILE_MAP.items():
-            logger_terminal.info(f'Starting ETL Process for : ||  {country} || ')
+            logger.info(f'Starting ETL Process for :  {country}')
+            logger_terminal.info(f'Starting ETL Process for : {country} ')
 
             # Create an instance of StockMetadataIngestion with Country Specific
             stock_ingestor = StockMetadataIngestion(stock_file_path=file_path, 

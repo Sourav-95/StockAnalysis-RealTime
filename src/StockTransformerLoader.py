@@ -4,8 +4,8 @@ import pandas as pd
 import warnings
 from tqdm import tqdm
 from src.StockIngestion import StockFeatureEngineering, StockInfoFetcher
-from src.stock_list import Stock_List
-from src_comp.logger import logger, logger_terminal
+from DataPreprocessor.stock_list import Stock_List
+from components.logger import logger, logger_terminal
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 

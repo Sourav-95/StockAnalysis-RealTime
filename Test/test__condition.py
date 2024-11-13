@@ -1,6 +1,6 @@
 from src.StockTransformerLoader import StockMetadataIngestion
 from src.StockIngestion import StockInfoFetcher
-from src_comp.logger import logger_terminal
+from components.logger import logger_terminal
 import pandas as pd
 from tqdm import tqdm
 

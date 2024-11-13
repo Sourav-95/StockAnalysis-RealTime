@@ -18,6 +18,6 @@ class Stock_List:
         data = pd.read_csv(input_file_path)
         data = data['Ticker']  # Select the 'Ticker' column
 
-        updated_data_list_us = [ticker for ticker in data]
-
+        updated_data_list_us = data.to_list()  # [ticker for ticker in data]
+        
         return updated_data_list_us

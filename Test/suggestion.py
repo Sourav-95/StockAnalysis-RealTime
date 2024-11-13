@@ -1,6 +1,6 @@
 import pandas as pd
 import yfinance as yf
-from src_comp.logger import logger
+from components.logger import logger
 
 class StockInfoFetcher:
     """Class to fetch and filter stock information from Yahoo Finance."""
