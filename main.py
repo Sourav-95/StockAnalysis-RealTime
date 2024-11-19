@@ -8,7 +8,7 @@ if __name__ == "__main__":
     try:
         # Define path for each country
         COUNTRY_FILE_MAP = {
-            "India": os.path.join(os.getcwd(), 'inputs', 'stock_list_test.csv'),
+            "India": os.path.join(os.getcwd(), 'inputs', 'stock_list.csv'),
             "USA": os.path.join(os.getcwd(), 'inputs', 'stock_list_test_usa.csv')
             # Add more countries while developing
         }
@@ -25,6 +25,6 @@ if __name__ == "__main__":
                                                     )
             
             stock_meta_data = stock_ingestor.ingest_metadata_stock()
-        logger_terminal.info(f'Time taken for ETL process: -  {(time.time() - start_time).__round__(2)} seconds')
+        logger_terminal.info(f'Time taken for ETL process of {len(COUNTRY_FILE_MAP)} Countries : -  {(time.time() - start_time).__round__(2)} seconds')
     except FileNotFoundError as e:
         logger_terminal.info(f'Error occured as : {e}')
