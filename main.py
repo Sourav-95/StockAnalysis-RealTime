@@ -8,7 +8,7 @@ if __name__ == "__main__":
     try:
         # Define path for each country
         COUNTRY_FILE_MAP = {
-            "India": os.path.join(os.getcwd(), 'inputs', 'stock_list.csv'),
+            "India": os.path.join(os.getcwd(), 'inputs', 'stock_list_test.csv'),
             "USA": os.path.join(os.getcwd(), 'inputs', 'stock_list_test_usa.csv')
             # Add more countries while developing
         }
