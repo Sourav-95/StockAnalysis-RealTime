@@ -1,13 +1,30 @@
-from src.StockLoader import StockMetadataIngestion
+from src.StockTransformerLoader import StockMetadataIngestion
+from components.logger import logger_terminal
+from components.logger import logger
+import time
+import os
 
 if __name__ == "__main__":
+    try:
+        # Define path for each country
+        COUNTRY_FILE_MAP = {
+            "India": os.path.join(os.getcwd(), 'inputs', 'stock_list_test.csv'),
+            "USA": os.path.join(os.getcwd(), 'inputs', 'stock_list_test_usa.csv')
+            # Add more countries while developing
+        }
 
-    stock_file_path = input("Enter the path to the stock list CSV file: ")
-    market_country = input("Enter the market country (e.g., 'India' or 'Others'): ")
-    
-    # Create an instance of StockMetadataIngestion with user inputs
-    stock_ingestor = StockMetadataIngestion(stock_file_path=stock_file_path, 
-                                            market_country=market_country
-                                            )
-    
-    stock_ingestor.ingest_metadata_stock()
+        start_time = time.time()
+
+        for country, file_path in COUNTRY_FILE_MAP.items():
+            logger.info(f'Starting ETL Process for :  {country}')
+            logger_terminal.info(f'Starting ETL Process for : {country} ')
+
+            # Create an instance of StockMetadataIngestion with Country Specific
+            stock_ingestor = StockMetadataIngestion(stock_file_path=file_path, 
+                                                    market_country=country
+                                                    )
+            
+            stock_meta_data = stock_ingestor.ingest_metadata_stock()
+        logger_terminal.info(f'Time taken for ETL process of {len(COUNTRY_FILE_MAP)} Countries : -  {(time.time() - start_time).__round__(2)} seconds')
+    except FileNotFoundError as e:
+        logger_terminal.info(f'Error occured as : {e}')
