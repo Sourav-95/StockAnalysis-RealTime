@@ -27,12 +27,11 @@ class StockMetadataIngestion:
         else:
             logger_terminal.warning(f'Incorrect entry of Market Country. Enter Country Correctly. (Eg: India, USA...)')
     
-    def generate_information_df(self, stock_name):
-
-        """Fetches and processes data for a specific stock."""
+    # Ingest & Process Data for Specific Stock using `StockIngestion.py` Package
+    def generate_information_df(self, stock_name): 
         try:
             stock_info_fetcher = StockInfoFetcher(stock_name)
-            data_all_info = stock_info_fetcher.filter_stock_info()
+            data_all_info = stock_info_fetcher.ingest_and_filter_stock_info()
             
             if data_all_info.empty or data_all_info.isna().all(axis=None):
                 logger.warning(f"No valid data found for {stock_name}.")
@@ -61,11 +60,11 @@ class StockMetadataIngestion:
         file_path = os.path.join(self.output_dir, f"Stock_Meta_Data_{self.market_country}.csv")
         data.to_csv(file_path, index=False)
         
-        # Convert to absolute path
+        # Return the absolute path
         absolute_file_path = os.path.abspath(file_path)
-        return absolute_file_path  # Return the absolute path
+        return absolute_file_path                                           
 
-    
+    # Main Function of the class which invokes all other functions
     def ingest_metadata_stock(self):
         """Main function to ingest metadata for all stocks in the list."""
 
@@ -91,9 +90,10 @@ class StockMetadataIngestion:
                         main_df = self.generate_information_df(item_bse)  
                         
                         if main_df is None or not isinstance(main_df, pd.DataFrame):
-                            logger.warning(f'Still no valid data returned for {item_bse}. Skipping this stock.')
+                            logger.warning(f'Still no valid data returned for {item_bse}. Skipping this stock.\n')
                             continue
-
+                
+                # Logic for all other countries
                 else:
                     main_df = self.generate_information_df(item)
                     if main_df is None or not isinstance(main_df, pd.DataFrame):
@@ -113,4 +113,5 @@ class StockMetadataIngestion:
             logger.info(f'Stock Meta Data Generated. URL - {url_metadata}\n')
             logger_terminal.info(f'Stock Meta Data Generated. URL - {url_metadata}\n')
 
-            return url_metadata  # Return the CSV path if needed
+            # Return the CSV path if needed
+            return url_metadata  

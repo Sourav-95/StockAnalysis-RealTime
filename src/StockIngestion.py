@@ -8,7 +8,21 @@ from components.exception import CustomException
 from components.exception import log_and_raise_exception
 
 class StockInfoFetcher:
-    """Class to fetch and filter stock information from Yahoo Finance."""
+    """
+    This Class to used to fetch stock information & filter the requried 
+    Information as per feature_attributes().
+    
+    Args:
+        stock_name(str) : The Name of the Stock to fetch information using its Exchange (Eg: RELIANCE.NS)
+    
+    Function:
+        1. Initialize the yfinance.Ticker(stock_name)
+        2. gets_info_dict() --> from class StockScrapper
+        3. filters the return from get_info_dict()
+
+    Returns:
+        Dataframe
+    """
 
     # Get all the Described Feature from the list
     all_features = feature_attribute()
@@ -17,16 +31,17 @@ class StockInfoFetcher:
         self.stock_name = stock_name
         self.stock = yf.Ticker(stock_name)
     
+    # StockScrapper Module which request API from Yahoo Finance
     def get_stock_info(self):
 
-        # StockScrapper Module which request API from Yahoo Finance
+        
         info_dict = StockScrapper(ticker_base=self.stock)._scrapper_()
         logger.info(f'Fetching stock inforation completed for {self.stock_name}.')
         return info_dict
             
+    # Filters specific stock attributes based on predefined keys   
+    def ingest_and_filter_stock_info(self):
         
-    def filter_stock_info(self):
-        # Filters specific stock attributes based on predefined keys
         all_info = self.get_stock_info()
         if all_info:
             filtered_info = {key: all_info[key] for key in self.all_features if key in all_info}
@@ -34,40 +49,75 @@ class StockInfoFetcher:
             return pd.DataFrame([filtered_info])
 
 class StockFeatureEngineering():
-    """Class to analyze the stock metrics and calculate growth rates"""
+    """
+    This Class to used to ingest additional data from Yahoo Finance API & 
+    analyze the stock metrics and calculate growth rates
+    
+    Args: 
+        stock (yf.Ticker.stock_name) : This is the class object instance which is invoked from StockInfoFetcher(stock_name)
+        data_all_info (DataFrame) : This is a dictionary argument from StockInfoFetcher result
+        market_country (str) : String Value used for certain FeatureEngginering
+
+    Returns:
+        data_all_info (DataFrame) : After Feature Engineering according to the Certain Condition
+    """
 
     def __init__(self, stock, data_all_info, market_country):
         self.stock = stock
         self.data_all_info = data_all_info
         self.market_country = market_country
 
+    # Calculates 1-Year and 5-Year growth for a specified attribute after ingesting data from Yahoo Finance API
     def find_growth_income(self, attribute):
-        # Calculates 1-Year and 5-Year growth for a specified attribute
+        
         try:
-            ### Calling from Yahoo Finance API (.cash_flow) ###
-            data = self.stock.income_stmt
-            _1Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 1].loc[attribute]) / data.iloc[:, 1].loc[attribute]
-            _5Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 3].loc[attribute]) / data.iloc[:, 3].loc[attribute] / 3
-            logger.info(f"Calculated growth for {attribute}: 1Y & 5Y.")
+            data = self.stock.income_stmt                   # .income_stmt is API call to get Financial income statement data
+            
+            if len(data)>0:
+                if attribute in data.index: 
+                    _1Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 1].loc[attribute]) / data.iloc[:, 1].loc[attribute]
+                    _5Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 3].loc[attribute]) / data.iloc[:, 3].loc[attribute] / 3
+                    logger.info(f"Calculated growth for {attribute}: 1Y & 5Y.")
+                else:
+                    _1Y_growth = None 
+                    _5Y_growth = None
+            else:
+                _1Y_growth = None
+                _5Y_growth = None
+                logger.info(f"Data Source doesn't have valid data for {attribute}")
             return _1Y_growth, _5Y_growth
+        except IndexError as e:
+            log_and_raise_exception(e,sys, f"Failed to Calculate growth for {attribute} for Index Error")
+            return None, None
         except Exception as e:
             log_and_raise_exception(e,sys, f"Failed to Calculate growth for {attribute}")
             return None, None
-        
+
+    # Calculates 1-Year and 5-Year CashFlow growth for a specified attribute after ingesting data from Yahoo Finance API   
     def find_growth_cashflow(self, attribute):
-        # Calculates 1-Year and 5-Year growth for a specified attribute
         try:
-            ### Calling from Yahoo Finance API (.cash_flow) ###
-            data = self.stock.cash_flow                     
-            cash_flow_attribute = data.iloc[:, 0].loc[attribute]
-            logger.info(f"Fetched {attribute} for last Year")
+            data = self.stock.cash_flow 
+
+            if len(data)>0: 
+                if attribute in data.index:
+                    cash_flow_attribute = data.iloc[:, 0].loc[attribute]
+                    logger.info(f"Calculated growth for  {attribute} for last Year")
+                else:
+                    cash_flow_attribute = None
+            else:
+                logger.info(f"Data Source doesn't have valid data for {attribute}")
+                cash_flow_attribute = None
             return cash_flow_attribute
+        except IndexError as e:
+            log_and_raise_exception(e,sys, f"Failed to Calculate growth of cashflow for {attribute} for Index Error")
+            return None
         except Exception as e:
             log_and_raise_exception(e,sys, f"Failed to calculate growth of CashFlow")
-            return None, None
+            return None
     
+    # Adds growth features for EBITDA, Total Revenue, Net Income, and Pretax Income.
     def add_growth_features(self):
-        # Adds growth features for EBITDA, Total Revenue, Net Income, and Pretax Income.
+        
         try:
             growth_features = {
                 '1Y EBITDA Growth': self.find_growth_income('EBITDA')[0],
@@ -88,8 +138,8 @@ class StockFeatureEngineering():
         except Exception as e:
             log_and_raise_exception(e,sys, "Failed in adding Growth Features")
 
+    # Calculates additional metrics for the stock data
     def calculate_additional_metrics(self):
-        # Calculates additional metrics for the stock data
         try:
             self.data_all_info['netIncomeMargin'] = self.data_all_info['netIncomeToCommon'] / self.data_all_info['totalRevenue']
             self.data_all_info['% Away From 52High'] = (self.data_all_info['fiftyTwoWeekHigh'] / self.data_all_info['currentPrice']) - 1
@@ -123,9 +173,10 @@ class StockFeatureEngineering():
             logger.info("Added market category based on marketCap.")
         except Exception as e:
             log_and_raise_exception(e,sys, "Failed in adding Ind Market Category")
-
+    
+    # Runs the Main FeatureEngineering Functions / process and returns the final DataFrame
     def StockFeatureEngine(self):
-        # Runs the analysis process and returns the final DataFrame
+        
         self.add_growth_features()
         self.calculate_additional_metrics()
         self.convert_market_cap_to_cr()
