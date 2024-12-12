@@ -33,8 +33,6 @@ class StockInfoFetcher:
     
     # StockScrapper Module which request API from Yahoo Finance
     def get_stock_info(self):
-
-        
         info_dict = StockScrapper(ticker_base=self.stock)._scrapper_()
         logger.info(f'Fetching stock inforation completed for {self.stock_name}.')
         return info_dict
@@ -44,7 +42,8 @@ class StockInfoFetcher:
         
         all_info = self.get_stock_info()
         if all_info:
-            filtered_info = {key: all_info[key] for key in self.all_features if key in all_info}
+            # filtered_info = {key: all_info[key] for key in self.all_features if key in all_info}
+            filtered_info = {key: all_info.get(key, None) for key in self.all_features}
             logger.info(f"Filtered stock information successfully for {self.stock_name}")
             return pd.DataFrame([filtered_info])
 
@@ -71,12 +70,19 @@ class StockFeatureEngineering():
     def find_growth_income(self, attribute):
         
         try:
-            data = self.stock.income_stmt                   # .income_stmt is API call to get Financial income statement data
-            
+            data = self.stock.income_stmt     # .income_stmt is API call to get Financial income statement data
             if len(data)>0:
-                if attribute in data.index: 
-                    _1Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 1].loc[attribute]) / data.iloc[:, 1].loc[attribute]
-                    _5Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 3].loc[attribute]) / data.iloc[:, 3].loc[attribute] / 3
+                if attribute in data.index:
+                    try: 
+                        _1Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 1].loc[attribute]) / data.iloc[:, 1].loc[attribute]
+                    except IndexError as e:
+                        _1Y_growth = None
+                        log_and_raise_exception(e,sys, f"Failed to Calculate growth for {attribute} for Index Error for 1Y")
+                    try:
+                        _5Y_growth = (data.iloc[:, 0].loc[attribute] - data.iloc[:, 3].loc[attribute]) / data.iloc[:, 3].loc[attribute] / 3
+                    except IndexError as e:
+                        _5Y_growth = None
+                        log_and_raise_exception(e,sys, f"Failed to Calculate growth for {attribute} for Index Error for 1Y")
                     logger.info(f"Calculated growth for {attribute}: 1Y & 5Y.")
                 else:
                     _1Y_growth = None 

@@ -31,8 +31,11 @@ class StockMetadataIngestion:
     def generate_information_df(self, stock_name): 
         try:
             stock_info_fetcher = StockInfoFetcher(stock_name)
+
+            # Fetching a single record Dataframe using Yahoo Finance API
             data_all_info = stock_info_fetcher.ingest_and_filter_stock_info()
             
+            # Transforming the dataframe with additional Features
             if data_all_info.empty or data_all_info.isna().all(axis=None):
                 logger.warning(f"No valid data found for {stock_name}.")
                 return None
@@ -57,7 +60,7 @@ class StockMetadataIngestion:
             os.makedirs(self.output_dir)
         
         # Create specific file name o each country
-        file_path = os.path.join(self.output_dir, f"Stock_Meta_Data_{self.market_country}.csv")
+        file_path = os.path.join(self.output_dir, f"Stock_Meta_Data_{self.market_country}_test.csv")
         data.to_csv(file_path, index=False)
         
         # Return the absolute path
@@ -74,7 +77,7 @@ class StockMetadataIngestion:
             logger.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}\n\n')
             logger_terminal.info(f'Total no of Records for which fetching Stock Details are: {len(stock_list)}')
         except Exception as e:
-            logger_terminal.warning(f'Error occurred in generate_stock_list() function: {e}')
+            logger_terminal.warning(f'Cannot Fetch Stock List. Error!- {e}')
 
         # Initialize an empty dataframe to store the results
         if stock_list:
